@@ -1,25 +1,37 @@
 import re
 import random
 
+
 def calculate(formula):
-
     def tokenize(formula):
-        # Добавление унарного оператора "±" для отрицательных чисел
-        formula = re.sub(r'^\-', r'±', formula)
-        formula = re.sub(r'\(\-', r'(±', formula)
 
+        # Удаление текста команды
+        formula = re.sub(r'^/roll', r'', formula)
+        formula = re.sub(r'^/r', r'', formula)
+
+        # Проверка на количество скобочек
+        if formula.count('(') != formula.count(')'):
+            raise Exception('Incorrect number of parentheses')
+
+        # Добавление унарного оператора "±" для отрицательных чисел
+        formula = re.sub(r'^-', r'±', formula)
+        formula = re.sub(r'\(-', r'(±', formula)
+
+        # Добавление унарного оператора "D" для краткой формы записи дайсов
         formula = re.sub(r'(?<!\d)d', r'D', formula)
 
         # Разбиение формулы на токены
-        tokens = re.findall(r'#.*|\[.*\]|dh|dl|kh|kl|d|D|\d+\.?\d*|±|\+|\-|\*|\/|\(|\)|\S', formula)
+        tokens = re.findall(r'#.*|\[.*]|dh|dl|kh|kl|d|D|\d+\.?\d*|±|\+|-|\*|/|\(|\)|\S', formula)
 
         # (#.*)                 - Комментарии
         # (dh|dl|kh|kl|d|D)     - Операции с кубасами
         # (\d+\.?\d*)           - Числа
         # (±|\+|\-|\*|\/|\(|\)) - Операторы
 
-        return tokens
-
+        if len(tokens):
+            return tokens
+        else:
+            raise Exception('Command is empty')
 
     def to_rpn(tokens):
         # Приоритет действий
@@ -33,9 +45,10 @@ def calculate(formula):
         rpn = []
         stack = []
 
+        # Смотрим все токены и переписываем в обратную польскую нотацию
         for token in tokens:
 
-            if re.match('\d+\.?\d*', token):  # Ищем числа
+            if re.match(r'\d+\.?\d*', token):
                 rpn.append(float(token))
 
             elif token == '(':
@@ -51,7 +64,7 @@ def calculate(formula):
                     rpn.append(stack.pop())
                 stack.append(token)
             else:
-                raise Exception('Недопустимые символы')
+                raise Exception('Incorrect characters entered')
         while stack:
             rpn.append(stack.pop())
 
@@ -87,10 +100,10 @@ def calculate(formula):
         rpn = to_rpn(tokens)
         return re.sub(r'(?<!^)(\.)?0+$', r'', str(rpn_calc(rpn)))
     except Exception as err:
-        return err
+        return str(err)
 
 
 if __name__ == "__main__":
-    formula = ("2d100")
+    formula = "x"
     print("Input: " + formula)
-    print("Result: " + str(calculate(formula)))
+    print("Result: " + calculate(formula))
