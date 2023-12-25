@@ -78,7 +78,7 @@ def calculate(formula):
                 a = int(stack.pop())
                 r = 0
                 for i in range(a):
-                    r = random.randint(1, b)
+                    r += random.randint(1, b)
                 stack.append(r)
         return stack[0]
 
