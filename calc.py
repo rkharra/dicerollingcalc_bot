@@ -89,16 +89,19 @@ def calculate(formula):
             elif token == 'd':
                 b = int(stack.pop())
                 a = int(stack.pop())
-                r = 0
+                r = []
                 for i in range(a):
-                    r += random.randint(1, b)
-                stack.append(r)
-        return stack[0]
+                    r.append(random.randint(1, b))
+                stack.append(sum(r))
+        if len(stack) == 1:
+            return stack[0]
+        else:
+            raise Exception('Wrong command')
 
     try:
         tokens = tokenize(formula)
         rpn = to_rpn(tokens)
-        return re.sub(r'(?<!^)(\.)?0+$', r'', str(rpn_calc(rpn)))
+        return re.sub(r'\.0+$', r'', str(rpn_calc(rpn)))
     except Exception as err:
         return str(err)
 
