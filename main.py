@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 
-import calc
+from calc import DiceCalculator, answer_format
 import config
 
 # Объект бота
@@ -25,20 +25,20 @@ async def cmd_start(message: types.Message):
 # Хэндлер на команду /roll и /r
 @dp.message(Command("roll", "r"))
 async def cmd_roll(message: types.Message):
-    try:
-        await message.reply(calc.calculate(message.text))
-    except Exception as err:
-        return err
+    calc = DiceCalculator()
+    answer = answer_format(calc.calculate(message.text.replace("/roll ", "").replace("/r ", "")))
+    await message.reply(answer, parse_mode="HTML")
+    print(f'{message.from_user.full_name}: {message.text}')
 
 
 # Хендлер на директ
 @dp.message()
 async def private(message: types.Message):
     if message.chat.type == 'private':
-        try:
-            await message.reply(calc.calculate(message.text))
-        except Exception as err:
-            return err
+        calc = DiceCalculator()
+        answer = answer_format(calc.calculate(message.text))
+        await message.reply(answer, parse_mode="HTML")
+        print(f'{message.from_user.full_name}: {message.text}')
 
 
 # Запуск процесса поллинга новых апдейтов
