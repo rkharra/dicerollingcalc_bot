@@ -36,8 +36,12 @@ async def cmd_roll(message: types.Message):
 async def private(message: types.Message):
     if message.chat.type == 'private':
         calc = DiceCalculator()
-        answer = answer_format(calc.calculate(message.text))
-        await message.reply(answer, parse_mode="HTML")
+        try:
+            answer = await asyncio.wait_for(asyncio.to_thread(answer_format,calc.calculate(message.text)), timeout=1.0)
+            await message.reply(answer, parse_mode="HTML")
+        except asyncio.TimeoutError:
+            await message.answer("Функция выполняется слишком долго!")
+
         print(f'{message.from_user.full_name}: {message.text}')
 
 

@@ -28,6 +28,8 @@ class DiceCalculator:
 
         parts = re.split(r'[dkhl]', dice_expr.lower())
         dice_num = int(parts[0])
+        if dice_num > 1000:
+            raise Exception('So much dices. Wow')
         dice_sides = int(parts[1])
 
         for i in range(dice_num):
@@ -98,13 +100,13 @@ class DiceCalculator:
 
     def rpn_evaulate(self, rpn):
         stack = []
-        dices = {}
+        dices = []
 
         for token in rpn:
             if re.match(r'^\d*d\d+k?\d*[l;h]?$', token):
                 roll = self.roll_dices(token)
                 stack.append(roll[0])
-                dices[token] = [roll[1], roll[2]]
+                dices.append([token, roll[1], roll[2]])
             elif re.match(r'^\d*\.?\d+$', token):
                 stack.append(token)
             elif token in ['+', '-', '*', '/']:
@@ -139,15 +141,17 @@ def answer_format(answer):
         return f'Ошибка: {answer['error']}'
     else:
         text = f'Результат: <b>{answer['answer']}</b>\n<blockquote>'
-        for exp, roll in answer['dices'].items():
-            text += f'\n{exp}:'
-            for dice in roll[0]:
-                text += f' <b>{dice}</b>'
+        for roll in answer['dices']:
+            text += f'\n{roll[0]}:'
             for dice in roll[1]:
+                text += f' <b>{dice}</b>'
+            for dice in roll[2]:
                 text += f' <s>{dice}</s>'
         text += '</blockquote>'
         if 'comment' in answer:
             text += f'\n\n<i>{answer['comment']}</i>'
+        if len(text) > 4000:
+            return f'Ошибка: answer is too long'
         return text
 
 
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     calc = DiceCalculator()
     #expression = input("Input: ")
     expressions = [
-                  "4d6k3h"
+                  "1d6+1d6"
                   ]
     # Для особых случаев тестирования:
     test_cases = [
